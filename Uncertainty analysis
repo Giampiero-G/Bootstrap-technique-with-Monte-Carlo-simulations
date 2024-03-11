@@ -1,0 +1,327 @@
+import numpy as np
+import pandas as pd
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+# Define a function to perform Monte Carlo simulation for a single source
+def simulate_source(m3_per_ha, m3_per_ha_sd, ha, ha_sd, allocation, allocation_sd, kg_mozzarella, kg_mozzarella_sd, n_iterations=10000):
+    results = []
+    for _ in range(n_iterations):
+        sampled_m3_per_ha = np.random.normal(m3_per_ha, m3_per_ha_sd)
+        sampled_ha = np.random.normal(ha, ha_sd)
+        sampled_allocation = np.random.normal(allocation, allocation_sd)
+        sampled_kg_mozzarella = np.random.normal(kg_mozzarella, kg_mozzarella_sd)
+        
+        result = (sampled_m3_per_ha * sampled_ha * sampled_allocation) / sampled_kg_mozzarella
+        results.append(result)
+    
+    return np.percentile(results, 25), np.median(results), np.percentile(results, 75)
+
+
+
+# Define a function to perform Monte Carlo simulation for a single source
+def simulate_source2(m3_kg, m3_kg_sd, kg_l_latte, kg_l_latte_sd, allocation, allocation_sd, n_iterations=10000):
+    results = []
+    for _ in range(n_iterations):
+        sampled_m3_per_kg = np.random.normal(m3_kg, m3_kg_sd)
+        sampled_m3_per_kg = max(sampled_m3_per_kg, 0) #avoid negative values
+        sampled_kg_l_latte = np.random.normal(kg_l_latte, kg_l_latte_sd)
+        sampled_kg_l_latte = max(kg_l_latte, 0) #avoid negative values
+        sampled_allocation = np.random.normal(allocation, allocation_sd)
+        
+        result = (sampled_m3_per_kg * sampled_kg_l_latte * sampled_allocation) * 3.57 #buffalo mozzarella cheese yield
+        results.append(result)
+    
+    return np.percentile(results, 25), np.median(results), np.percentile(results, 75)
+
+
+# Define a function to perform Monte Carlo simulation for a single source
+def simulate_source3(m3_kg, m3_kg_sd, n_iterations=10000):
+    results = []
+    for _ in range(n_iterations):
+        sampled_m3_per_kg = np.random.normal(m3_kg, m3_kg_sd)
+        sampled_m3_per_kg = max(sampled_m3_per_kg, 0) #avoid negative values
+        
+        result = (sampled_m3_per_kg) #buffalo mozzarella cheese yield
+        results.append(result)
+    
+    return np.percentile(results, 25), np.median(results), np.percentile(results, 75)
+
+# Define a function to perform Monte Carlo simulation for a single source
+def simulate_source4(m3_kg, m3_kg_sd, allocation, allocation_sd, n_iterations=10000):
+    results = []
+    for _ in range(n_iterations):
+        sampled_m3_kg = np.random.normal(m3_kg, m3_kg_sd)
+        sampled_m3_kg = max(sampled_m3_kg, 0) #avoid negative values
+        sampled_allocation = np.random.normal(allocation, allocation_sd)
+        result = (sampled_m3_kg*sampled_allocation) #buffalo mozzarella cheese yield
+        results.append(result)
+    
+    return np.percentile(results, 25), np.median(results), np.percentile(results, 75)
+
+
+# Define a function to perform Monte Carlo simulation for a single source
+def simulate_source5(m3_cycle, m3_cycle_sd, allocation, allocation_sd, n_iterations=10000):
+    results = []
+    for _ in range(n_iterations):
+        sampled_m3_cycle = np.random.normal(m3_cycle, m3_cycle_sd)
+        sampled_m3_cycle = max(sampled_m3_cycle, 0) #avoid negative values
+        sampled_allocation = np.random.normal(allocation, allocation_sd)
+        result = (sampled_m3_cycle*sampled_allocation) #buffalo mozzarella cheese yield
+        results.append(result)
+    
+    return np.percentile(results, 25), np.median(results), np.percentile(results, 75)
+
+
+# Inputs for each source as dictionaries
+sources = [
+    #green water on-farm crop
+    {"name": "Corn silage_green1", "m3_per_ha": 1423, "m3_per_ha_sd": 427, "ha": 12.8, "ha_sd": 13.3, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Sorghum silage_green1", "m3_per_ha": 1179, "m3_per_ha_sd": 354, "ha": 4.6, "ha_sd": 4.9, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Triticale silage_green1", "m3_per_ha": 2080, "m3_per_ha_sd": 624, "ha": 7.9, "ha_sd": 8.2, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Hay in rotation_green1", "m3_per_ha": 2081, "m3_per_ha_sd": 624, "ha": 15.6, "ha_sd": 14.5, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Hay non-rotation_green1", "m3_per_ha": 2081, "m3_per_ha_sd": 624, "ha": 9.2, "ha_sd": 9.8, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    #blue water on-farm crop
+    {"name": "Corn silage_blue1", "m3_per_ha": 2903, "m3_per_ha_sd": 871, "ha": 12.8, "ha_sd": 13.3, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Sorghum silage_blue1", "m3_per_ha": 2996, "m3_per_ha_sd": 889, "ha": 4.6, "ha_sd": 4.9, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    #grey water on-farm crop
+    {"name": "Corn silage_grey1", "m3_per_ha": 1426, "m3_per_ha_sd": 428, "ha": 12.8, "ha_sd": 13.3, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Sorghum silage_grey1", "m3_per_ha": 843, "m3_per_ha_sd": 253, "ha": 4.6, "ha_sd": 4.9, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Triticale silage_grey1", "m3_per_ha": 2308, "m3_per_ha_sd": 692, "ha": 7.9, "ha_sd": 8.2, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Hay in rotation_grey1", "m3_per_ha": 3649, "m3_per_ha_sd": 1095, "ha": 15.6, "ha_sd": 14.5, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+    {"name": "Hay non-rotation_grey1", "m3_per_ha": 12654, "m3_per_ha_sd": 3796, "ha": 9.2, "ha_sd": 9.8, "allocation": 0.78, "allocation_sd": 0.05, "kg_mozzarella": 140550, "kg_mozzarella_sd": 63588},
+]
+
+
+
+source2 = [
+    #green water off-farm crop
+    {"name": "Corn flour_green2", "m3_kg": 0.971, "m3_kg_sd": 0.291, "kg_l_latte": 0.261, "kg_l_latte_sd": 0.114, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Soy flour_green2", "m3_kg": 2.397, "m3_kg_sd": 0.719, "kg_l_latte": 0.148, "kg_l_latte_sd": 0.091, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Barley flour and roots_green2", "m3_kg": 1.213, "m3_kg_sd": 0.363, "kg_l_latte": 0.174, "kg_l_latte_sd": 0.172, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Wheat bran_green2", "m3_kg": 1.292, "m3_kg_sd": 0.387, "kg_l_latte": 0.033, "kg_l_latte_sd": 0.022, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Field bean_green2", "m3_kg": 1.317, "m3_kg_sd": 0.395, "kg_l_latte": 0.215, "kg_l_latte_sd": 0.126, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Cotton_green2", "m3_kg": 0.755, "m3_kg_sd": 0.226, "kg_l_latte": 0.073, "kg_l_latte_sd": 0.046, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Fat_green2", "m3_kg": 1.057, "m3_kg_sd": 0.317, "kg_l_latte": 0.012, "kg_l_latte_sd": 0.006, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Flax_green2", "m3_kg": 0.755, "m3_kg_sd": 0.226, "kg_l_latte": 0.056, "kg_l_latte_sd": 0.039, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Spent grains_green2", "m3_kg": 0.254, "m3_kg_sd": 0.076, "kg_l_latte": 0.338, "kg_l_latte_sd": 0.310, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Concentrate_green2", "m3_kg": 1.481, "m3_kg_sd": 0.444, "kg_l_latte": 0.137, "kg_l_latte_sd": 0.234, "allocation": 0.78, "allocation_sd": 0.05},
+    #blue water off-farm crop
+    {"name": "Corn flour_blue2", "m3_kg": 0.083, "m3_kg_sd": 0.024, "kg_l_latte": 0.261, "kg_l_latte_sd": 0.114, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Soy flour_blue2", "m3_kg": 0.083, "m3_kg_sd": 0.024, "kg_l_latte": 0.148, "kg_l_latte_sd": 0.091, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Barley flour and roots_blue2", "m3_kg": 0.079, "m3_kg_sd": 0.023, "kg_l_latte": 0.174, "kg_l_latte_sd": 0.172, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Wheat bran_blue2", "m3_kg": 0.347, "m3_kg_sd": 0.104, "kg_l_latte": 0.033, "kg_l_latte_sd": 0.022, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Field bean_blue2", "m3_kg": 0.205, "m3_kg_sd": 0.06, "kg_l_latte": 0.215, "kg_l_latte_sd": 0.126, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Cotton_blue2", "m3_kg": 0.432, "m3_kg_sd": 0.129, "kg_l_latte": 0.073, "kg_l_latte_sd": 0.046, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Flax_blue2", "m3_kg": 0.432, "m3_kg_sd": 0.129, "kg_l_latte": 0.056, "kg_l_latte_sd": 0.039, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Spent grains_blue2", "m3_kg": 0.016, "m3_kg_sd": 0.004, "kg_l_latte": 0.338, "kg_l_latte_sd": 0.310, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Concentrate_blue2", "m3_kg": 0.287, "m3_kg_sd": 0.086, "kg_l_latte": 0.137, "kg_l_latte_sd": 0.234, "allocation": 0.78, "allocation_sd": 0.05},
+    #grey water off-farm crop
+    {"name": "Corn flour_grey2", "m3_kg": 0.199, "m3_kg_sd": 0.06, "kg_l_latte": 0.261, "kg_l_latte_sd": 0.114, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Soy flour_grey2", "m3_kg": 0.044, "m3_kg_sd": 0.044, "kg_l_latte": 0.148, "kg_l_latte_sd": 0.091, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Barley flour and roots_grey2", "m3_kg": 0.131, "m3_kg_sd": 0.039, "kg_l_latte": 0.174, "kg_l_latte_sd": 0.172, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Wheat bran_grey2", "m3_kg": 0.21, "m3_kg_sd": 0.063, "kg_l_latte": 0.033, "kg_l_latte_sd": 0.022, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Field bean_grey2", "m3_kg": 0.496, "m3_kg_sd": 0.149, "kg_l_latte": 0.215, "kg_l_latte_sd": 0.126, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Cotton_grey2", "m3_kg": 0.146, "m3_kg_sd": 0.044, "kg_l_latte": 0.073, "kg_l_latte_sd": 0.046, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Fat_grey2", "m3_kg": 0.04, "m3_kg_sd": 0.012, "kg_l_latte": 0.012, "kg_l_latte_sd": 0.006, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Flax_grey2", "m3_kg": 0.146, "m3_kg_sd": 0.044, "kg_l_latte": 0.056, "kg_l_latte_sd": 0.039, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Spent grains_grey2", "m3_kg": 0.027, "m3_kg_sd": 0.008, "kg_l_latte": 0.338, "kg_l_latte_sd": 0.310, "allocation": 0.78, "allocation_sd": 0.05},
+    {"name": "Concentrate_grey2", "m3_kg": 0.133, "m3_kg_sd": 0.04, "kg_l_latte": 0.137, "kg_l_latte_sd": 0.234, "allocation": 0.78, "allocation_sd": 0.05}
+]
+
+source3 = [
+    #blue water barn
+    {"name": "Buffalo dirnking water_blue3", "m3_kg": 0.026, "m3_kg_sd": 0.002},
+    {"name": "Cleaning milking parlour_blue3", "m3_kg": 0.0023, "m3_kg_sd": 0.0002},
+    {"name": "Cooling system_blue3", "m3_kg": 0.0011, "m3_kg_sd": 0.0001},
+]
+
+
+source4 = [
+    #blue water cheese factory
+    {"name": "Cheese factory activities_blue4", "m3_kg": 0.0205, "m3_kg_sd": 0.01, "allocation": 0.92, "allocation_sd": 0.04},
+]
+
+source5 = [
+    #blue water cheese factory
+    {"name": "Home consumption_blue5", "m3_cycle": 0.013, "m3_cycle_sd": 0.0013, "allocation": 0.05, "allocation_sd": 0.04},
+]
+
+
+# Perform simulation for each source and collect results
+results = []
+for source in sources:
+    p25, median, p75 = simulate_source(**{k: v for k, v in source.items() if k != 'name'})
+    results.append({"Source": source["name"], "25th Percentile": p25, "Median": median, "75th Percentile": p75})
+
+for source in source2:
+    p25, median, p75 = simulate_source2(**{k: v for k, v in source.items() if k != 'name'})
+    results.append({"Source": source["name"], "25th Percentile": p25, "Median": median, "75th Percentile": p75})
+
+for source in source3:
+    p25, median, p75 = simulate_source3(**{k: v for k, v in source.items() if k != 'name'})
+    results.append({"Source": source["name"], "25th Percentile": p25, "Median": median, "75th Percentile": p75})
+
+for source in source4:
+    p25, median, p75 = simulate_source4(**{k: v for k, v in source.items() if k != 'name'})
+    results.append({"Source": source["name"], "25th Percentile": p25, "Median": median, "75th Percentile": p75})
+
+for source in source5:
+    p25, median, p75 = simulate_source5(**{k: v for k, v in source.items() if k != 'name'})
+    results.append({"Source": source["name"], "25th Percentile": p25, "Median": median, "75th Percentile": p75})
+
+# Convert results to DataFrame and print or save to CSV
+results_df = pd.DataFrame(results)
+print(results_df)
+results_df.to_excel('source_water_usage_results.xlsx', index=False)
+
+# Calcluate the median values
+medians = [result["Median"] for result in results]
+
+# Calcualte the sum of the median values
+sum_of_medians = sum(medians)
+
+
+print(f"Sum of medians: {sum_of_medians}")
+
+
+# Extract the 25th and 75th percentiles
+p25s = results_df['25th Percentile'].values
+p75s = results_df['75th Percentile'].values
+
+# Setup the Monte Carlo simulation
+n_iterations = 10000
+total_wf_simulations = []
+
+for _ in range(n_iterations):
+    # For each source, randomly select a value between its 25th and 75th percentiles
+    simulated_values = [np.random.uniform(low=p25, high=p75) for p25, p75 in zip(p25s, p75s)]
+    
+    # Sum these values to simulate the total WF for this iteration
+    total_wf = sum(simulated_values)
+    total_wf_simulations.append(total_wf)
+
+# Calcolo dei percentili 0°, 50° (mediana) e 100° dalla simulazione aggregata
+total_min = np.percentile(total_wf_simulations, 0)
+total_median = np.median(total_wf_simulations)
+total_max = np.percentile(total_wf_simulations, 100)
+
+# Visualizing results
+print(f"Total WF Range: Min={total_min}, Median={total_median}, Max={total_max}")
+
+
+##############
+
+def monte_carlo_simulation(fraction_df, n_iterations=10000):
+    simulated_totals = []
+    for _ in range(n_iterations):
+        # For each source in the fraction, choose a random value between the 25th and 75th percentile
+        simulation = [np.random.uniform(low, high) for low, high in zip(fraction_df['25th Percentile'], fraction_df['75th Percentile'])]
+        # Calculates the sum of the values chosen for this iteration
+        simulated_totals.append(sum(simulation))
+    
+    # Calculates the minimum, median and maximum value from the simulation
+    min_val = np.min(simulated_totals)
+    median_val = np.median(simulated_totals)
+    max_val = np.max(simulated_totals)
+    
+    return min_val, median_val, max_val
+
+def calculate_monte_carlo_stats_by_fraction_and_source(results_df, source_names):
+    aggregate_stats_mc = {}
+    for source_name in source_names:
+        aggregate_stats_mc[source_name] = {}
+        filtered_df = results_df[results_df['Source'].str.contains(source_name)]
+        for fraction in ['green', 'blue', 'grey']:
+            fraction_df = filtered_df[filtered_df['Source'].str.contains(fraction)]
+            if not fraction_df.empty:
+                min_val, median_val, max_val = monte_carlo_simulation(fraction_df)
+                aggregate_stats_mc[source_name][fraction] = {
+                    'Min Val': min_val,
+                    'Median Val': median_val,
+                    'Max Val': max_val
+                }
+    return aggregate_stats_mc
+
+# Define the names of the sources you want to analyse
+source_names = ['green1', 'blue1', 'grey1', 'green2', 'blue2', 'grey2',
+                'green3', 'blue3', 'grey3','green4', 'blue4', 'grey4',
+                'green5', 'blue5', 'grey5']
+
+
+aggregate_stats_mc = calculate_monte_carlo_stats_by_fraction_and_source(results_df, source_names)
+
+# Print Monte Carlo simulation results
+for source_name, stats in aggregate_stats_mc.items():
+    print(f"Statistiche Monte Carlo per {source_name}:")
+    for fraction, fraction_stats in stats.items():
+        print(f"  Frazione: {fraction}")
+        for stat_name, stat_value in fraction_stats.items():
+            print(f"    {stat_name}: {stat_value:.4f}")
+
+
+################
+
+# Mapping of category names for the X-axis
+custom_labels = {
+    'green1_green': 'On-farm crop ',
+    'blue1_blue': 'On-farm crop  ',
+    'grey1_grey': 'On-farm crop   ',
+    'green2_green': 'Off-farm crop ',
+    'blue2_blue': 'Off-farm crop  ',
+    'grey2_grey': 'Off-farm crop   ',
+    'blue3_blue': 'Barn',
+    'blue4_blue': 'Cheese factory',
+    'blue5_blue': 'Home consumption'
+}
+
+# Custom colours for each category
+custom_colors = {
+    'On-farm crop ': '#76b947',  # Green
+    'On-farm crop  ': '#3498db',   # Blue
+    'On-farm crop   ': '#95a5a6',   # Grey
+    'Off-farm crop ': '#76b947', # Green
+    'Off-farm crop  ': '#3498db',  # Blue
+    'Off-farm crop   ': '#95a5a6',  # Grey
+    'Barn': '#3498db',  # Blue
+    'Cheese factory': '#3498db',  # Blue
+    'Home consumption': '#3498db',  # Blue
+}
+
+#  Preparing data for the graph
+categories = []  # New labels for the X-axis
+median_values = []  # Median values for each category
+error_bars = []  # Error bars (min e max)
+bar_colors = []  # Colours for each category
+
+for source_name, stats in aggregate_stats_mc.items():
+    for fraction, fraction_stats in stats.items():
+        # Compose the category name as defined in custom_labels
+        label_key = f"{source_name}_{fraction}"
+        custom_label = custom_labels.get(label_key, "Undefined")  # Use 'Undefined' if mapping is missing
+        categories.append(custom_label)
+        
+        median_val = fraction_stats['Median Val']
+        error_bar = (fraction_stats['Median Val'] - fraction_stats['Min Val'], fraction_stats['Max Val'] - fraction_stats['Median Val'])
+        
+        median_values.append(median_val)
+        error_bars.append(error_bar)
+        bar_colors.append(custom_colors.get(custom_label, "gray"))  # Default grey colour if mapping is missing
+
+# Graph creation
+fig, ax = plt.subplots(figsize=(14, 8))
+
+# Add bars to the graph
+for i, (category, median, error, color) in enumerate(zip(categories, median_values, error_bars, bar_colors)):
+    ax.bar(i, median, yerr=np.array([error]).T, capsize=5, color=color, edgecolor='black', label=category)
+
+plt.xticks(range(len(categories)), categories, rotation=45, ha="right")
+ax.set_ylabel('m3/kg of buffalo mozzarella cheese')
+
+# Show legend once per colour
+handles, labels = plt.gca().get_legend_handles_labels()
+by_label = dict(zip(labels, handles))
+#plt.legend(by_label.values(), by_label.keys())
+
+plt.tight_layout()
+plt.show()
